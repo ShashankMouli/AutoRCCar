@@ -60,12 +60,26 @@ class VideoStreamHandler(socketserver.StreamRequestHandler):
         stop_flag = False
         stop_sign_active = True
 
-        try:
+        try: 
             # stream video frames one by one
+           
+            import requests
+            import cv2
+            import numpy as np
+
+            url = 'http://192.168.43.1:8080/shot.jpg'
+
             while True:
-                stream_bytes += self.rfile.read(1024)
-                first = stream_bytes.find(b'\xff\xd8')
-                last = stream_bytes.find(b'\xff\xd9')
+               
+                img_resp = requests.get(url)
+                img_arr = np.array(bytearray(img_resp.content), dtype = np.uint8)
+                img = cv2.imdecode(img_arr, -1)
+    
+                cv2.imshow('AndroidCam',img)
+    
+                if cv2.waitKey(1) == 27:
+                    break
+
                 if first != -1 and last != -1:
                     jpg = stream_bytes[first:last + 2]
                     stream_bytes = stream_bytes[last + 2:]
